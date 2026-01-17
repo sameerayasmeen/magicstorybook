@@ -5,6 +5,7 @@ import { Story, AppState } from './types.ts';
 import { decode, decodeAudioData } from './utils/audio.ts';
 import { IntroScreen } from './components/IntroScreen.tsx';
 import { OnboardingFlow } from './components/OnboardingFlow.tsx';
+import { ApiKeyGate } from './components/ApiKeyGate.tsx';
 
 const CATEGORIES = [
   { 
@@ -68,6 +69,7 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [isKeyValidated, setIsKeyValidated] = useState(!!process.env.API_KEY);
 
   const audioContextRef = useRef<AudioContext | null>(null);
 
@@ -97,9 +99,11 @@ const App: React.FC = () => {
       setDirection('forward');
       setAppState(AppState.READING_STORY);
       setIsSaved(false);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError("The magic failed! Try another topic.");
+      // Displaying actual error message to help user debug (e.g., API key issues)
+      const msg = err.message || "Unknown error";
+      setError(`The magic failed: ${msg.includes('403') || msg.includes('401') ? "Invalid API Key" : "Please try again!"}`);
       setAppState(AppState.IDLE);
     }
   };
@@ -148,7 +152,7 @@ const App: React.FC = () => {
         setSavedStories(updatedCollection);
         localStorage.setItem('magic_storybook_saved_stories', JSON.stringify(updatedCollection));
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
       setError("Painting is hard! Sparkle needs a break.");
     } finally {
@@ -175,7 +179,7 @@ const App: React.FC = () => {
       source.connect(audioContextRef.current.destination);
       source.onended = () => setIsAudioPlaying(false);
       source.start();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
       setError("Voice box is dusty! Try again.");
       setIsAudioPlaying(false);
@@ -214,6 +218,10 @@ const App: React.FC = () => {
     localStorage.setItem('magic_storybook_onboarded', 'true');
     setAppState(AppState.IDLE);
   };
+
+  if (!isKeyValidated) {
+    return <ApiKeyGate onValidated={() => setIsKeyValidated(true)} />;
+  }
 
   if (appState === AppState.INTRO) {
     return <IntroScreen onStart={onIntroComplete} />;
@@ -272,7 +280,6 @@ const App: React.FC = () => {
               <p className="text-indigo-600 text-2xl font-bold opacity-80">What kind of magic story should we make today?</p>
             </div>
             
-            {/* Search Box - High Contrast for Kids */}
             <div className="w-full max-w-3xl relative group">
               <div className="absolute -inset-2 bg-gradient-to-r from-yellow-400 via-indigo-400 to-purple-400 rounded-[3.5rem] blur opacity-20 group-hover:opacity-40 transition duration-500 animate-pulse"></div>
               <div className="relative">
@@ -292,6 +299,12 @@ const App: React.FC = () => {
                 </button>
               </div>
             </div>
+
+            {error && (
+              <div className="bg-red-100 text-red-600 px-10 py-5 rounded-full border-4 border-red-200 font-black animate-bounce shadow-2xl text-xl font-kids">
+                {error}
+              </div>
+            )}
 
             <div className="w-full space-y-8">
               <div className="flex flex-col items-center gap-2">
@@ -323,91 +336,171 @@ const App: React.FC = () => {
                 ))}
               </div>
             </div>
-
-            {savedStories.length > 0 && (
-              <button 
-                onClick={openLibrary}
-                className="group flex flex-col items-center gap-4 bg-white p-6 rounded-[3rem] shadow-xl border-b-8 border-indigo-50 hover:scale-105 transition-all active:scale-95"
-              >
-                <div className="flex items-center gap-3 text-yellow-400">
-                  <span className="text-xl">⭐</span>
-                  <span className="text-sm font-black uppercase tracking-[0.3em]">Your Library</span>
-                  <span className="text-xl">⭐</span>
-                </div>
-                <div className="flex -space-x-4">
-                  {savedStories.slice(0, 4).map((s, idx) => (
-                    <div key={idx} className="w-16 h-16 rounded-full border-4 border-white bg-indigo-50 overflow-hidden shadow-lg transform rotate-6 hover:rotate-0 transition-transform">
-                      {s.pages[0].imageUrl ? <img src={s.pages[0].imageUrl} className="w-full h-full object-cover" /> : <span className="flex items-center justify-center h-full text-2xl">📖</span>}
-                    </div>
-                  ))}
-                  {savedStories.length > 4 && (
-                    <div className="w-16 h-16 rounded-full border-4 border-white bg-indigo-500 flex items-center justify-center text-white font-bold text-xl shadow-lg">
-                      +{savedStories.length - 4}
-                    </div>
-                  )}
-                </div>
-                <p className="text-indigo-900 font-kids text-xl">Open My Magical Bookshelf ➡</p>
-              </button>
-            )}
-
-            {error && (
-              <div className="bg-red-100 text-red-600 px-10 py-5 rounded-full border-4 border-red-200 font-black animate-bounce shadow-2xl text-xl font-kids">
-                {error}
-              </div>
-            )}
           </div>
         )}
 
-        {appState === AppState.LIBRARY && (
-          <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 space-y-12 pb-12">
-            <div className="flex flex-col items-center gap-4">
+        {appState === AppState.GENERATING_STORY && (
+          <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-12">
+            <div className="relative">
+              <div className="text-[10rem] animate-bounce">🎨</div>
+              <div className="absolute -top-4 -right-4 text-6xl animate-pulse">✨</div>
+            </div>
+            <div className="space-y-6 text-center">
+              <h3 className="text-4xl text-indigo-900 font-kids drop-shadow-sm">{loadingMsg}</h3>
+              <div className="w-96 h-6 bg-white rounded-full overflow-hidden mx-auto border-4 border-indigo-100 shadow-2xl p-1">
+                <div className="h-full bg-gradient-to-r from-yellow-400 via-indigo-400 to-purple-400 w-full animate-progress-strip rounded-full"></div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {appState === AppState.READING_STORY && story && (
+          <div className="space-y-8 animate-in fade-in duration-1000">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4 px-4">
               <button 
-                onClick={reset}
-                className="flex items-center gap-2 bg-white text-indigo-500 px-8 py-4 rounded-[2rem] font-kids text-2xl shadow-xl hover:scale-105 active:scale-95 transition-all border-b-8 border-indigo-50 active:border-b-0"
+                onClick={savedStories.length > 0 ? openLibrary : reset}
+                className="flex items-center gap-2 bg-white text-indigo-500 px-6 py-3 rounded-2xl font-kids text-xl shadow-lg hover:scale-105 active:scale-95 transition-all border-b-4 border-indigo-50"
               >
                 <span>⬅️</span>
-                <span>Back Home</span>
+                <span>{savedStories.length > 0 ? 'Back to Library' : 'Back to Home'}</span>
               </button>
-              <h2 className="text-6xl text-indigo-950 font-kids text-center">My Magical Bookshelf</h2>
-              <p className="text-indigo-400 text-2xl font-bold">You have {savedStories.length} stories saved!</p>
+              
+              <h2 className="text-4xl md:text-5xl text-center text-indigo-950 font-kids drop-shadow-sm">{story.title}</h2>
+              
+              <button 
+                onClick={handleSaveStory}
+                disabled={isSaved}
+                className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-kids text-xl shadow-lg hover:scale-105 active:scale-95 transition-all border-b-4 
+                  ${isSaved ? 'bg-green-100 text-green-600 border-green-200 cursor-default' : 'bg-yellow-400 text-indigo-900 border-yellow-600'}
+                `}
+              >
+                <span>{isSaved ? '✅' : '🌟'}</span>
+                <span>{isSaved ? 'Saved!' : 'Save Story'}</span>
+              </button>
             </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {savedStories.map((saved, idx) => (
-                <div 
-                  key={idx}
-                  onClick={() => openSavedStory(saved)}
-                  className="group relative bg-white rounded-[4rem] shadow-2xl border-b-[16px] border-indigo-50 p-6 flex flex-col items-center cursor-pointer hover:translate-y-[-10px] transition-all duration-300 active:scale-95"
-                >
-                  <button 
-                    onClick={(e) => handleDeleteStory(e, idx)}
-                    className="absolute -top-3 -right-3 bg-red-500 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-xl opacity-0 group-hover:opacity-100 transition-opacity z-20 hover:scale-110 active:scale-90"
-                    title="Delete Story"
-                  >
-                    ❌
-                  </button>
-                  <div className="w-full aspect-[4/5] bg-indigo-50 rounded-[3rem] mb-6 overflow-hidden border-4 border-indigo-50 flex items-center justify-center relative shadow-inner">
-                    {saved.pages[0].imageUrl ? (
-                      <img src={saved.pages[0].imageUrl} alt={saved.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                    ) : (
-                      <span className="text-8xl">📖</span>
-                    )}
-                    <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-black/40 to-transparent pointer-events-none"></div>
+            
+            <div 
+              key={currentPage}
+              className={`grid grid-cols-1 md:grid-cols-2 gap-10 items-center bg-white p-12 rounded-[5rem] shadow-2xl border-b-[16px] border-indigo-50/50 relative 
+                animate-in fade-in duration-500
+                ${direction === 'forward' ? 'slide-in-from-right-12' : 'slide-in-from-left-12'}
+                zoom-in-95
+              `}
+            >
+              <div className="aspect-square bg-indigo-50 rounded-[4rem] overflow-hidden relative group shadow-inner border-4 border-indigo-50">
+                {story.pages[currentPage].imageUrl ? (
+                  <img 
+                    src={story.pages[currentPage].imageUrl} 
+                    alt="Story illustration" 
+                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center p-12 text-center space-y-6">
+                    <span className="text-9xl grayscale group-hover:grayscale-0 transition-all duration-700 cursor-help animate-float">🖼️</span>
+                    <p className="text-indigo-300 font-bold font-kids text-3xl">Click "Paint Magic"!</p>
                   </div>
-                  <h3 className="text-2xl font-kids text-indigo-900 text-center line-clamp-2 px-4 mb-4">
-                    {saved.title}
-                  </h3>
-                  <div className="flex gap-2 mb-2">
-                    {saved.pages.map((p, i) => (
-                      <div key={i} className={`w-3 h-3 rounded-full ${p.imageUrl ? 'bg-indigo-400 shadow-[0_0_8px_rgba(129,140,248,0.5)]' : 'bg-gray-200'}`}></div>
-                    ))}
+                )}
+                
+                {loadingMsg && loadingMsg.includes('painting') && (
+                  <div className="absolute inset-0 bg-white/90 backdrop-blur-md flex items-center justify-center z-10">
+                     <div className="text-center">
+                        <div className="text-8xl animate-spin mb-6">🎨</div>
+                        <p className="text-indigo-900 font-bold font-kids text-3xl">Painting Magic...</p>
+                     </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex flex-col h-full justify-between space-y-8">
+                <div className="space-y-6">
+                  <div className="inline-block px-6 py-2 rounded-full bg-indigo-500 text-white text-lg font-kids shadow-lg">
+                    Page {currentPage + 1} of {story.pages.length}
+                  </div>
+                  <p className="text-3xl text-indigo-950 leading-relaxed font-bold">
+                    {story.pages[currentPage].text}
+                  </p>
+                </div>
+                
+                <div className="space-y-6">
+                  <div className="flex flex-col sm:flex-row items-center gap-6">
+                    <button 
+                      onClick={handleReadAloud}
+                      disabled={isAudioPlaying}
+                      className="w-full bg-yellow-400 hover:bg-yellow-500 disabled:bg-gray-200 text-indigo-900 font-kids text-2xl py-6 px-10 rounded-[2.5rem] shadow-xl transition-all flex items-center justify-center gap-4 transform active:scale-95 border-b-8 border-yellow-600 active:border-b-0"
+                    >
+                      <span className="text-4xl">{isAudioPlaying ? '🗣️' : '🔊'}</span>
+                      <span>{isAudioPlaying ? 'Reading...' : 'Hear Story'}</span>
+                    </button>
+                    
+                    <button 
+                      onClick={handleGenerateIllustration}
+                      className="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-kids text-2xl py-6 px-10 rounded-[2.5rem] shadow-xl transition-all flex items-center justify-center gap-4 transform active:scale-95 border-b-8 border-indigo-800 active:border-b-0"
+                    >
+                      <span className="text-4xl">✨</span>
+                      <span>Paint Magic</span>
+                    </button>
                   </div>
                 </div>
-              ))}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between px-4 max-w-2xl mx-auto w-full">
+              <button 
+                onClick={goToPrevPage}
+                disabled={currentPage === 0}
+                className="p-8 rounded-[3rem] bg-white shadow-2xl text-indigo-500 disabled:opacity-20 hover:scale-110 active:scale-90 transition-all group border-b-8 border-indigo-100 active:border-b-0"
+                aria-label="Previous Page"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              
+              <div className="flex gap-6">
+                {story.pages.map((_, i) => (
+                  <button 
+                    key={i} 
+                    onClick={() => {
+                      setDirection(i > currentPage ? 'forward' : 'backward');
+                      setCurrentPage(i);
+                    }}
+                    className={`h-6 rounded-full transition-all duration-500 shadow-xl ${i === currentPage ? 'bg-indigo-500 w-20' : 'bg-white w-6 hover:bg-indigo-100'}`}
+                  />
+                ))}
+              </div>
+
+              <button 
+                onClick={goToNextPage}
+                disabled={currentPage === story.pages.length - 1}
+                className="p-8 rounded-[3rem] bg-white shadow-2xl text-indigo-500 disabled:opacity-20 hover:scale-110 active:scale-90 transition-all group border-b-8 border-indigo-100 active:border-b-0"
+                aria-label="Next Page"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
             </div>
           </div>
         )}
       </main>
+
+      <style>{`
+        @keyframes progress-strip {
+          from { background-position: 0 0; }
+          to { background-position: 50px 0; }
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-15px); }
+        }
+        .animate-progress-strip {
+          background-size: 50px 50px;
+          animation: progress-strip 1s linear infinite;
+        }
+        .animate-float {
+          animation: float 4s ease-in-out infinite;
+        }
+      `}</style>
     </div>
   );
 };
