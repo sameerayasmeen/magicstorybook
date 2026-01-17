@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, Type, Modality } from "@google/genai";
-import { Story, Page, ImageSize } from "../types";
+import { Story, Page, ImageSize } from "../types.ts";
 
 export const generateStory = async (prompt: string): Promise<Story> => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -52,7 +52,6 @@ export const generateIllustration = async (prompt: string, size: ImageSize): Pro
     config: {
       imageConfig: {
         aspectRatio: "1:1"
-        // Note: imageSize (1K/2K/4K) is not supported for gemini-2.5-flash-image
       }
     },
   });

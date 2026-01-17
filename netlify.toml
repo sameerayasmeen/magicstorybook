@@ -6,3 +6,13 @@
   from = "/*"
   status = 200
   to = "/index.html"
+
+[[headers]]
+  for = "*.tsx"
+  [headers.values]
+    Content-Type = "application/javascript"
+
+[[headers]]
+  for = "*.ts"
+  [headers.values]
+    Content-Type = "application/javascript"
