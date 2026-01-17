@@ -281,8 +281,8 @@ const App: React.FC = () => {
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && startNewStory()}
-                  placeholder="Tell Sparkle your story idea... ✨"
-                  className="w-full p-8 pr-44 rounded-[3rem] bg-white shadow-2xl border-4 border-indigo-100 focus:border-yellow-400 outline-none text-2xl font-bold text-indigo-950 transition-all placeholder:text-indigo-800 placeholder:opacity-100 placeholder:italic"
+                  placeholder="TYPE YOUR STORY IDEA HERE... ✨"
+                  className="w-full p-8 pr-44 rounded-[3rem] bg-white shadow-2xl border-4 border-indigo-100 focus:border-yellow-400 outline-none text-2xl font-bold text-indigo-950 transition-all placeholder:text-indigo-900 placeholder:opacity-100 placeholder:font-black"
                 />
                 <button 
                   onClick={() => startNewStory()}
