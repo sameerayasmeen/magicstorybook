@@ -7,12 +7,14 @@
   status = 200
   to = "/index.html"
 
+# Critical for "no-build" deployments:
+# Tells the browser to treat TS/TSX files as JavaScript modules.
 [[headers]]
   for = "*.tsx"
   [headers.values]
-    Content-Type = "application/javascript"
+    Content-Type = "application/javascript; charset=utf-8"
 
 [[headers]]
   for = "*.ts"
   [headers.values]
-    Content-Type = "application/javascript"
+    Content-Type = "application/javascript; charset=utf-8"

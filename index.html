@@ -16,27 +16,36 @@
         h1, h2, h3, .font-kids {
             font-family: 'Fredoka One', cursive;
         }
-        .magic-bg {
-            background: linear-gradient(135deg, #fce7f3 0%, #fae8ff 100%);
-        }
-        .card-shadow {
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-        }
     </style>
-<script type="importmap">
+    <script>
+      // Shim process.env for the browser to prevent crashes
+      window.process = {
+        env: {
+          // This will be replaced by Netlify if you use a build step, 
+          // but for direct static hosting, it ensures the app doesn't break.
+          API_KEY: "" 
+        }
+      };
+    </script>
+    <script type="importmap">
 {
   "imports": {
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "react": "https://esm.sh/react@^19.2.3",
-    "@google/genai": "https://esm.sh/@google/genai@^1.35.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
+    "react": "https://esm.sh/react@19?dev",
+    "react-dom": "https://esm.sh/react-dom@19?dev",
+    "react-dom/client": "https://esm.sh/react-dom@19/client?dev",
+    "@google/genai": "https://esm.sh/@google/genai@1.35.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/"
   }
 }
 </script>
 </head>
 <body class="bg-amber-50">
     <div id="root"></div>
-    <!-- Load index.tsx using Babel standalone -->
+    <!-- 
+      Using data-type="module" tells Babel to transpile this and all its relative imports.
+      The 'typescript' and 'react' presets are essential for .tsx files.
+    -->
     <script type="text/babel" data-presets="react,typescript" data-type="module" src="index.tsx"></script>
 </body>
 </html>
