@@ -1,0 +1,7 @@
+{
+  "name": "Magic Storybook AI",
+  "description": "A magical AI-powered storybook for kids that generates stories, illustrations, and reads them aloud.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
