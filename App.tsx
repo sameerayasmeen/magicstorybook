@@ -13,8 +13,7 @@ const CATEGORIES = [
     topic: "A friendly ghost named Boo who lost his favorite sheet", 
     emoji: "👻", 
     gradient: "from-indigo-600 via-indigo-500 to-purple-700",
-    shadow: "shadow-indigo-200",
-    border: "border-indigo-300"
+    border: "border-indigo-800"
   },
   { 
     id: 'science', 
@@ -22,8 +21,7 @@ const CATEGORIES = [
     topic: "A young scientist who accidentally makes a giant jumping bean", 
     emoji: "🔬", 
     gradient: "from-cyan-500 via-blue-500 to-blue-700",
-    shadow: "shadow-blue-200",
-    border: "border-blue-300"
+    border: "border-blue-800"
   },
   { 
     id: 'fiction', 
@@ -31,8 +29,7 @@ const CATEGORIES = [
     topic: "A secret city built entirely out of books and bookmarks", 
     emoji: "📚", 
     gradient: "from-emerald-500 via-green-500 to-green-700",
-    shadow: "shadow-green-200",
-    border: "border-green-300"
+    border: "border-green-800"
   },
   { 
     id: 'barbie', 
@@ -40,8 +37,7 @@ const CATEGORIES = [
     topic: "Barbie and her friends finding a lost magic tiara in Malibu", 
     emoji: "💖", 
     gradient: "from-pink-400 via-rose-500 to-rose-600",
-    shadow: "shadow-pink-200",
-    border: "border-pink-300"
+    border: "border-rose-800"
   },
   { 
     id: 'bheem', 
@@ -49,8 +45,7 @@ const CATEGORIES = [
     topic: "Bheem and his friends saving the village using yummy Laddoos", 
     emoji: "💪", 
     gradient: "from-orange-400 via-amber-500 to-yellow-600",
-    shadow: "shadow-orange-200",
-    border: "border-orange-300"
+    border: "border-orange-800"
   },
   { 
     id: 'masha', 
@@ -58,8 +53,7 @@ const CATEGORIES = [
     topic: "Masha trying to teach the Bear how to play hide and seek", 
     emoji: "🐻", 
     gradient: "from-amber-600 via-orange-600 to-red-700",
-    shadow: "shadow-amber-200",
-    border: "border-amber-300"
+    border: "border-amber-800"
   },
 ];
 
@@ -278,6 +272,7 @@ const App: React.FC = () => {
               <p className="text-indigo-600 text-2xl font-bold opacity-80">What kind of magic story should we make today?</p>
             </div>
             
+            {/* Search Box - Improved Contrast Placeholder */}
             <div className="w-full max-w-3xl relative group">
               <div className="absolute -inset-2 bg-gradient-to-r from-yellow-400 via-indigo-400 to-purple-400 rounded-[3.5rem] blur opacity-20 group-hover:opacity-40 transition duration-500 animate-pulse"></div>
               <div className="relative">
@@ -286,8 +281,8 @@ const App: React.FC = () => {
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && startNewStory()}
-                  placeholder="Type your story idea here... ✨ (Example: A dragon that eats cupcakes!)"
-                  className="w-full p-8 pr-44 rounded-[3rem] bg-white shadow-2xl border-4 border-indigo-100 focus:border-yellow-400 outline-none text-2xl font-bold text-indigo-950 transition-all placeholder:text-indigo-500 placeholder:opacity-60 placeholder:italic"
+                  placeholder="Tell Sparkle your story idea... ✨"
+                  className="w-full p-8 pr-44 rounded-[3rem] bg-white shadow-2xl border-4 border-indigo-100 focus:border-yellow-400 outline-none text-2xl font-bold text-indigo-950 transition-all placeholder:text-indigo-800 placeholder:opacity-100 placeholder:italic"
                 />
                 <button 
                   onClick={() => startNewStory()}
@@ -313,7 +308,7 @@ const App: React.FC = () => {
                   <button
                     key={cat.id}
                     onClick={() => startNewStory(cat.topic)}
-                    className={`group relative flex flex-col items-center justify-center p-8 rounded-[3rem] bg-gradient-to-br ${cat.gradient} border-t-2 border-white/40 shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 overflow-hidden min-h-[180px] border-b-8 ${cat.border.replace('border-', 'border-b-')}`}
+                    className={`group relative flex flex-col items-center justify-center p-8 rounded-[3rem] bg-gradient-to-br ${cat.gradient} border-t-2 border-white/40 shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 overflow-hidden min-h-[180px] border-b-8 ${cat.border}`}
                   >
                     <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/20 to-transparent"></div>
                     <div className="relative z-10 flex flex-col items-center">
@@ -368,10 +363,10 @@ const App: React.FC = () => {
             <div className="flex flex-col items-center gap-4">
               <button 
                 onClick={reset}
-                className="flex items-center gap-2 bg-white text-indigo-500 px-6 py-3 rounded-2xl font-kids text-xl shadow-lg hover:scale-105 active:scale-95 transition-all border-b-4 border-indigo-50"
+                className="flex items-center gap-2 bg-white text-indigo-500 px-8 py-4 rounded-[2rem] font-kids text-2xl shadow-xl hover:scale-105 active:scale-95 transition-all border-b-8 border-indigo-50 active:border-b-0"
               >
                 <span>⬅️</span>
-                <span>Back to Home</span>
+                <span>Back Home</span>
               </button>
               <h2 className="text-6xl text-indigo-950 font-kids text-center">My Magical Bookshelf</h2>
               <p className="text-indigo-400 text-2xl font-bold">You have {savedStories.length} stories saved!</p>
