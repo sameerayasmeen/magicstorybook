@@ -76,7 +76,7 @@ const aiGenerateStory = async (prompt: string): Promise<Story> => {
 const aiGenerateImage = async (prompt: string): Promise<string> => {
   const response = await getAI().models.generateContent({
     model: 'gemini-2.5-flash-image',
-    contents: { parts: [{ text: `A vibrant, kid-friendly digital illustration: ${prompt}. Studio Ghibli style, magical lighting.` }] },
+    contents: { parts: [{ text: `A vibrant, high-quality kid-friendly digital illustration: ${prompt}. Studio Ghibli style, soft magical lighting, clean lines.` }] },
   });
   const part = response.candidates?.[0]?.content?.parts.find(p => p.inlineData);
   if (!part?.inlineData) throw new Error("No image");
@@ -96,17 +96,17 @@ const aiGenerateSpeech = async (text: string): Promise<string> => {
 
 const MagicBackground = () => (
   <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-    <div className="absolute top-10 left-10 text-4xl animate-float opacity-30">✨</div>
-    <div className="absolute top-1/4 right-20 text-5xl animate-float-slow opacity-20">⭐</div>
-    <div className="absolute bottom-20 left-1/4 text-6xl animate-float-delayed opacity-25">🌈</div>
-    <div className="absolute bottom-40 right-10 text-4xl animate-float opacity-30">✨</div>
+    <div className="absolute top-10 left-10 text-4xl animate-float opacity-20">✨</div>
+    <div className="absolute top-1/4 right-20 text-5xl animate-float-slow opacity-15">⭐</div>
+    <div className="absolute bottom-20 left-1/4 text-6xl animate-float-delayed opacity-20">🌈</div>
+    <div className="absolute bottom-40 right-10 text-4xl animate-float opacity-20">✨</div>
   </div>
 );
 
 const Onboarding = ({ onFinish }: { onFinish: () => void }) => {
   const [step, setStep] = useState(0);
   const slides = [
-    { title: "Dream it! 🧠", desc: "Type any idea you have. A dragon who eats tacos? We can do it!", icon: "💭", color: "bg-indigo-500" },
+    { title: "Imagine it! 🧠", desc: "Type any idea you have. A dragon who eats tacos? We can do it!", icon: "💭", color: "bg-indigo-500" },
     { title: "Watch it! 🎨", desc: "Sparkle the Dragon uses magic paint to draw every page for you.", icon: "🖌️", color: "bg-yellow-400" },
     { title: "Hear it! 🔊", desc: "Our magic book reads the story aloud so you can enjoy the magic.", icon: "🐉", color: "bg-pink-500" }
   ];
@@ -247,22 +247,31 @@ const App = () => {
     } finally { setLoading(''); }
   };
 
+  const portals = [
+    { emoji: "👸", title: "Barbie", color: "bg-pink-400", border: "border-pink-600", shadow: "shadow-pink-200" },
+    { emoji: "👦", title: "Chhota Bheem", color: "bg-orange-400", border: "border-orange-600", shadow: "shadow-orange-200" },
+    { emoji: "👻", title: "Friendly Ghost", color: "bg-indigo-400", border: "border-indigo-600", shadow: "shadow-indigo-200" },
+    { emoji: "🦖", title: "Tiny Dino", color: "bg-green-400", border: "border-green-600", shadow: "shadow-green-200" },
+    { emoji: "🏰", title: "Magic Castle", color: "bg-purple-400", border: "border-purple-600", shadow: "shadow-purple-200" },
+    { emoji: "🚀", title: "Space Adventure", color: "bg-blue-400", border: "border-blue-600", shadow: "shadow-blue-200" }
+  ];
+
   return (
     <div className="min-h-screen p-4 md:p-8 flex flex-col items-center bg-gradient-to-b from-amber-50 to-indigo-50 relative overflow-hidden">
       <MagicBackground />
 
       <header className="w-full max-w-5xl flex justify-between items-center mb-10 relative z-20">
-        <h1 className="text-4xl text-indigo-950 font-kids drop-shadow-sm cursor-pointer" onClick={() => setState(AppState.IDLE)}>✨ Magic Storybook</h1>
+        <h1 className="text-4xl text-indigo-950 font-kids drop-shadow-sm cursor-pointer hover:scale-105 transition-transform" onClick={() => setState(AppState.IDLE)}>✨ Magic Storybook</h1>
         {state === AppState.IDLE && (
-          <button onClick={() => setState(AppState.LIBRARY)} className="bg-white px-8 py-3 rounded-full font-kids text-xl text-indigo-500 shadow-xl hover:scale-105 transition-all">📚 My Library</button>
+          <button onClick={() => setState(AppState.LIBRARY)} className="bg-white px-8 py-3 rounded-full font-kids text-xl text-indigo-500 shadow-xl hover:scale-105 transition-all border-b-4 border-indigo-100">📚 My Library</button>
         )}
       </header>
 
-      <main className="w-full max-w-5xl bg-white/80 backdrop-blur-md rounded-[4rem] shadow-2xl p-8 md:p-16 min-h-[600px] flex flex-col items-center justify-center relative z-10 border border-white">
+      <main className="w-full max-w-5xl bg-white/70 backdrop-blur-xl rounded-[4rem] shadow-2xl p-8 md:p-12 min-h-[600px] flex flex-col items-center justify-center relative z-10 border border-white/50">
         
         {state === AppState.INTRO && (
           <div className="text-center space-y-12 animate-in zoom-in duration-700">
-            <div className="bg-yellow-400 w-56 h-56 rounded-[5rem] shadow-2xl flex items-center justify-center mx-auto text-[10rem] animate-float">📖</div>
+            <div className="bg-yellow-400 w-56 h-56 rounded-[5rem] shadow-[0_20px_50px_rgba(251,191,36,0.5)] flex items-center justify-center mx-auto text-[10rem] animate-float">📖</div>
             <div className="space-y-4">
               <h2 className="text-6xl md:text-8xl text-indigo-950 font-kids drop-shadow-lg">Magic Storybook</h2>
               <p className="text-3xl text-indigo-400 font-bold italic">Endless adventures, made just for you!</p>
@@ -274,24 +283,40 @@ const App = () => {
         {state === AppState.ONBOARDING && <Onboarding onFinish={() => setState(AppState.IDLE)} />}
 
         {state === AppState.IDLE && (
-          <div className="w-full space-y-16 text-center animate-in fade-in">
-            <h2 className="text-7xl text-indigo-950 font-kids">Let's Create!</h2>
-            <div className="max-w-2xl mx-auto space-y-6 relative group">
-              <div className="absolute -inset-2 bg-gradient-to-r from-yellow-400 to-indigo-500 rounded-[3rem] blur opacity-10 group-focus-within:opacity-30 transition-opacity"></div>
+          <div className="w-full space-y-12 text-center animate-in fade-in">
+            <div className="space-y-4">
+              <h2 className="text-7xl text-indigo-950 font-kids">Let's Create!</h2>
+              <p className="text-2xl text-indigo-300 font-bold uppercase tracking-widest">Type your idea or pick a card</p>
+            </div>
+
+            <div className="max-w-2xl mx-auto relative group">
+              <div className="absolute -inset-2 bg-gradient-to-r from-yellow-300 to-indigo-400 rounded-[3rem] blur opacity-20 group-focus-within:opacity-40 transition-opacity"></div>
               <div className="relative">
-                <input value={topic} onChange={e => setTopic(e.target.value)} onKeyDown={e => e.key === 'Enter' && startStory()} placeholder="A pizza who loves surfing..." className="w-full p-8 rounded-[3rem] border-4 border-indigo-50 outline-none text-2xl shadow-inner font-bold text-indigo-900 placeholder:text-indigo-200" />
-                <button onClick={() => startStory()} className="absolute right-4 top-4 bottom-4 bg-indigo-500 text-white px-10 rounded-[2.5rem] font-kids text-2xl shadow-lg hover:bg-indigo-600 transition-all">Go! ✨</button>
+                <input 
+                  value={topic} 
+                  onChange={e => setTopic(e.target.value)} 
+                  onKeyDown={e => e.key === 'Enter' && startStory()} 
+                  placeholder="A pizza who loves surfing..." 
+                  className="w-full p-8 rounded-[3rem] border-4 border-white/20 outline-none text-2xl shadow-2xl font-bold bg-indigo-500 text-white placeholder:text-indigo-100/70 focus:bg-indigo-600 transition-all text-center" 
+                />
+                <button onClick={() => startStory()} className="absolute right-4 top-4 bottom-4 bg-yellow-400 text-indigo-900 px-10 rounded-[2.5rem] font-kids text-2xl shadow-lg hover:scale-105 hover:bg-yellow-300 transition-all border-b-4 border-yellow-600 active:border-b-0">Go! ✨</button>
               </div>
             </div>
-            <div className="space-y-6">
-              <h3 className="text-3xl font-kids text-indigo-900/40 italic">Or pick a portal:</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                {[ {e: "👻", t: "Ghost"}, {e: "🚀", t: "Space"}, {e: "🦖", t: "Dino"}, {e: "🏰", t: "Castle"} ].map(c => (
-                  <button key={c.t} onClick={() => startStory(c.t)} className="bg-white p-8 rounded-[3rem] shadow-xl hover:scale-110 transition-all group border-b-[10px] border-indigo-50">
-                    <div className="text-7xl group-hover:rotate-12 transition-transform">{c.e}</div>
-                  </button>
-                ))}
-              </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-8 w-full">
+              {portals.map((p) => (
+                <button 
+                  key={p.title} 
+                  onClick={() => startStory(p.title)} 
+                  className={`relative flex flex-col items-center p-6 ${p.color} rounded-[3rem] border-b-[12px] ${p.border} ${p.shadow} shadow-xl hover:scale-110 active:scale-95 transition-all group overflow-hidden`}
+                >
+                  <div className="text-8xl mb-4 group-hover:rotate-12 transition-transform drop-shadow-lg">{p.emoji}</div>
+                  <div className="bg-white/90 backdrop-blur px-6 py-2 rounded-full">
+                    <span className="text-xl font-kids text-indigo-900">{p.title}</span>
+                  </div>
+                  <div className="absolute top-0 right-0 p-2 opacity-30 animate-pulse">✨</div>
+                </button>
+              ))}
             </div>
           </div>
         )}
@@ -302,22 +327,25 @@ const App = () => {
           <div className="text-center space-y-10">
             <div className="text-[12rem] animate-bounce drop-shadow-2xl">🪄</div>
             <h3 className="text-4xl font-kids text-indigo-900 animate-pulse">{loading}</h3>
+            <div className="max-w-xs mx-auto h-3 bg-indigo-50 rounded-full overflow-hidden">
+               <div className="h-full bg-indigo-500 animate-infinite-scroll w-1/2 rounded-full"></div>
+            </div>
           </div>
         )}
 
         {state === AppState.READING_STORY && story && (
           <div className="w-full space-y-10 animate-in slide-in-from-right">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-              <button onClick={() => setState(AppState.IDLE)} className="text-indigo-300 font-bold hover:text-indigo-500">🏠 Home</button>
+              <button onClick={() => setState(AppState.IDLE)} className="bg-white/80 px-6 py-2 rounded-full text-indigo-300 font-bold hover:text-indigo-500 shadow-sm">🏠 Home</button>
               <h2 className="text-5xl text-center text-indigo-950 font-kids flex-1 px-4 drop-shadow-sm">{story.title}</h2>
-              <button onClick={() => setState(AppState.LIBRARY)} className="text-indigo-300 font-bold hover:text-indigo-500">📚 Library</button>
+              <button onClick={() => setState(AppState.LIBRARY)} className="bg-white/80 px-6 py-2 rounded-full text-indigo-300 font-bold hover:text-indigo-500 shadow-sm">📚 Library</button>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center bg-white p-10 rounded-[4rem] shadow-2xl border-4 border-indigo-50">
               <div className="aspect-square bg-indigo-50 rounded-[3rem] overflow-hidden flex items-center justify-center relative shadow-inner">
                 {story.pages[page].imageUrl ? (
                   <img src={story.pages[page].imageUrl} className="w-full h-full object-cover animate-in fade-in" />
                 ) : (
-                  <button onClick={paintImage} className="bg-indigo-500 text-white px-10 py-5 rounded-[2rem] font-kids text-2xl shadow-xl hover:bg-indigo-600 transition-all">
+                  <button onClick={paintImage} className="bg-indigo-500 text-white px-10 py-5 rounded-[2rem] font-kids text-2xl shadow-xl hover:bg-indigo-600 transition-all border-b-4 border-indigo-800">
                     {loading === 'Painting...' ? '🎨 Painting...' : '✨ Paint Magic'}
                   </button>
                 )}
@@ -326,7 +354,7 @@ const App = () => {
               <div className="flex flex-col h-full justify-between space-y-8">
                 <div>
                   <div className="inline-block px-6 py-2 rounded-full bg-indigo-500 text-white text-lg font-kids shadow-lg mb-6">Page {page + 1}</div>
-                  <p className="text-4xl text-gray-800 leading-relaxed font-bold italic">"{story.pages[page].text}"</p>
+                  <p className="text-4xl text-gray-800 leading-relaxed font-bold italic font-kids">"{story.pages[page].text}"</p>
                 </div>
                 <button onClick={readAloud} disabled={playing} className="w-full py-8 bg-yellow-400 text-indigo-950 rounded-[3rem] font-kids text-3xl shadow-2xl border-b-[12px] border-yellow-600 active:border-b-0 active:translate-y-1 transition-all disabled:opacity-50">
                   {playing ? '🗣️ Reading...' : '🔊 Read Aloud'}
@@ -346,9 +374,11 @@ const App = () => {
         @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-30px); } }
         @keyframes float-slow { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-50px) rotate(10deg); } }
         @keyframes float-delayed { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-40px); } }
+        @keyframes infinite-scroll { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
         .animate-float { animation: float 6s ease-in-out infinite; }
         .animate-float-slow { animation: float-slow 10s ease-in-out infinite; }
         .animate-float-delayed { animation: float-delayed 8s ease-in-out infinite; animation-delay: 2s; }
+        .animate-infinite-scroll { animation: infinite-scroll 2s linear infinite; }
       `}</style>
     </div>
   );
