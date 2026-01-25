@@ -248,12 +248,12 @@ const App = () => {
   };
 
   const portals = [
-    { emoji: "👸", title: "Barbie", color: "bg-pink-400", border: "border-pink-600", shadow: "shadow-pink-200" },
-    { emoji: "👦", title: "Chhota Bheem", color: "bg-orange-400", border: "border-orange-600", shadow: "shadow-orange-200" },
-    { emoji: "👻", title: "Friendly Ghost", color: "bg-indigo-400", border: "border-indigo-600", shadow: "shadow-indigo-200" },
-    { emoji: "🦖", title: "Tiny Dino", color: "bg-green-400", border: "border-green-600", shadow: "shadow-green-200" },
-    { emoji: "🏰", title: "Magic Castle", color: "bg-purple-400", border: "border-purple-600", shadow: "shadow-purple-200" },
-    { emoji: "🚀", title: "Space Adventure", color: "bg-blue-400", border: "border-blue-600", shadow: "shadow-blue-200" }
+    { title: "Barby", img: "https://images.unsplash.com/photo-1626125342332-d39363f9ef49?q=80&w=400&auto=format&fit=crop", color: "from-pink-400 to-rose-500", border: "border-rose-600" },
+    { title: "Chhota Bheem", img: "https://images.unsplash.com/photo-1590333746431-1376dfc6c11d?q=80&w=400&auto=format&fit=crop", color: "from-orange-400 to-amber-600", border: "border-amber-700" },
+    { title: "Ghost", img: "https://images.unsplash.com/photo-1509248961158-e54f6934749c?q=80&w=400&auto=format&fit=crop", color: "from-indigo-400 to-purple-600", border: "border-purple-700" },
+    { title: "Dino", img: "https://images.unsplash.com/photo-1525825691042-e14d9042fc59?q=80&w=400&auto=format&fit=crop", color: "from-green-400 to-emerald-600", border: "border-emerald-700" },
+    { title: "Magic Castle", img: "https://images.unsplash.com/photo-1529154031171-89a662485144?q=80&w=400&auto=format&fit=crop", color: "from-purple-400 to-violet-600", border: "border-violet-700" },
+    { title: "Space Adventure", img: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=400&auto=format&fit=crop", color: "from-blue-400 to-indigo-600", border: "border-indigo-700" }
   ];
 
   return (
@@ -267,7 +267,7 @@ const App = () => {
         )}
       </header>
 
-      <main className="w-full max-w-5xl bg-white/70 backdrop-blur-xl rounded-[4rem] shadow-2xl p-8 md:p-12 min-h-[600px] flex flex-col items-center justify-center relative z-10 border border-white/50">
+      <main className="w-full max-w-6xl bg-white/70 backdrop-blur-xl rounded-[4rem] shadow-2xl p-6 md:p-12 min-h-[600px] flex flex-col items-center justify-center relative z-10 border border-white/50">
         
         {state === AppState.INTRO && (
           <div className="text-center space-y-12 animate-in zoom-in duration-700">
@@ -286,35 +286,37 @@ const App = () => {
           <div className="w-full space-y-12 text-center animate-in fade-in">
             <div className="space-y-4">
               <h2 className="text-7xl text-indigo-950 font-kids">Let's Create!</h2>
-              <p className="text-2xl text-indigo-300 font-bold uppercase tracking-widest">Type your idea or pick a card</p>
+              <p className="text-2xl text-indigo-300 font-bold uppercase tracking-widest">Type your idea or pick an adventure</p>
             </div>
 
-            <div className="max-w-2xl mx-auto relative group">
-              <div className="absolute -inset-2 bg-gradient-to-r from-yellow-300 to-indigo-400 rounded-[3rem] blur opacity-20 group-focus-within:opacity-40 transition-opacity"></div>
-              <div className="relative">
+            <div className="max-w-3xl mx-auto relative group">
+              <div className="absolute -inset-4 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 rounded-[4rem] blur-xl opacity-20 group-hover:opacity-40 transition-opacity animate-pulse"></div>
+              <div className="relative flex bg-indigo-600 p-3 rounded-[4rem] shadow-2xl border-4 border-white/30">
                 <input 
                   value={topic} 
                   onChange={e => setTopic(e.target.value)} 
                   onKeyDown={e => e.key === 'Enter' && startStory()} 
-                  placeholder="A pizza who loves surfing..." 
-                  className="w-full p-8 rounded-[3rem] border-4 border-white/20 outline-none text-2xl shadow-2xl font-bold bg-indigo-500 text-white placeholder:text-indigo-100/70 focus:bg-indigo-600 transition-all text-center" 
+                  placeholder="Tell me a story about a brave kitty..." 
+                  className="flex-1 p-6 pl-10 rounded-l-[3.5rem] outline-none text-2xl font-bold bg-transparent text-white placeholder:text-indigo-100/40" 
                 />
-                <button onClick={() => startStory()} className="absolute right-4 top-4 bottom-4 bg-yellow-400 text-indigo-900 px-10 rounded-[2.5rem] font-kids text-2xl shadow-lg hover:scale-105 hover:bg-yellow-300 transition-all border-b-4 border-yellow-600 active:border-b-0">Go! ✨</button>
+                <button onClick={() => startStory()} className="bg-yellow-400 text-indigo-950 px-12 py-4 rounded-full font-kids text-3xl shadow-xl hover:scale-105 hover:bg-yellow-300 transition-all border-b-[6px] border-yellow-600 active:border-b-0 active:translate-y-1">GO! ✨</button>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-8 w-full">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 w-full px-4">
               {portals.map((p) => (
                 <button 
                   key={p.title} 
                   onClick={() => startStory(p.title)} 
-                  className={`relative flex flex-col items-center p-6 ${p.color} rounded-[3rem] border-b-[12px] ${p.border} ${p.shadow} shadow-xl hover:scale-110 active:scale-95 transition-all group overflow-hidden`}
+                  className={`group relative flex flex-col h-[280px] rounded-[3rem] overflow-hidden shadow-2xl transition-all hover:scale-[1.05] active:scale-95 border-b-[10px] ${p.border}`}
                 >
-                  <div className="text-8xl mb-4 group-hover:rotate-12 transition-transform drop-shadow-lg">{p.emoji}</div>
-                  <div className="bg-white/90 backdrop-blur px-6 py-2 rounded-full">
-                    <span className="text-xl font-kids text-indigo-900">{p.title}</span>
+                  <img src={p.img} alt={p.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                  <div className={`absolute inset-0 bg-gradient-to-t ${p.color} opacity-30 group-hover:opacity-10 transition-opacity`}></div>
+                  <div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-black/80 via-black/40 to-transparent pt-20">
+                    <span className="text-3xl font-kids text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">{p.title}</span>
+                    <div className="mt-2 text-indigo-100 text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity tracking-widest uppercase">Start Journey →</div>
                   </div>
-                  <div className="absolute top-0 right-0 p-2 opacity-30 animate-pulse">✨</div>
+                  <div className="absolute top-4 right-6 text-white text-3xl drop-shadow-lg opacity-80 animate-bounce-slow">✨</div>
                 </button>
               ))}
             </div>
@@ -375,10 +377,12 @@ const App = () => {
         @keyframes float-slow { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-50px) rotate(10deg); } }
         @keyframes float-delayed { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-40px); } }
         @keyframes infinite-scroll { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
+        @keyframes bounce-slow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         .animate-float { animation: float 6s ease-in-out infinite; }
         .animate-float-slow { animation: float-slow 10s ease-in-out infinite; }
         .animate-float-delayed { animation: float-delayed 8s ease-in-out infinite; animation-delay: 2s; }
         .animate-infinite-scroll { animation: infinite-scroll 2s linear infinite; }
+        .animate-bounce-slow { animation: bounce-slow 2s ease-in-out infinite; }
       `}</style>
     </div>
   );
