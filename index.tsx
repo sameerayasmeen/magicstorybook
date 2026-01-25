@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import ReactDOM from 'react-dom/client';
 import { GoogleGenAI, Type, Modality } from "@google/genai";
 
-// --- Types & Constants ---
+// --- Types ---
 interface Page {
   text: string;
   illustrationPrompt: string;
@@ -25,18 +25,8 @@ enum AppState {
   ONBOARDING = 'ONBOARDING',
   IDLE = 'IDLE',
   GENERATING_STORY = 'GENERATING_STORY',
-  READING_STORY = 'READING_STORY',
-  LIBRARY = 'LIBRARY'
+  READING_STORY = 'READING_STORY'
 }
-
-const CATEGORIES = [
-  { id: 'ghost', title: "Ghost Stories", topic: "A friendly ghost named Boo who lost his favorite sheet", emoji: "👻", gradient: "from-indigo-600 to-purple-700", border: "border-indigo-800" },
-  { id: 'science', title: "Scientific", topic: "A young scientist who accidentally makes a giant jumping bean", emoji: "🔬", gradient: "from-cyan-500 to-blue-700", border: "border-blue-800" },
-  { id: 'fiction', title: "Fictionland", topic: "A secret city built entirely out of books", emoji: "📚", gradient: "from-emerald-500 to-green-700", border: "border-green-800" },
-  { id: 'barbie', title: "Barbie Girl", topic: "Barbie finding a lost magic tiara in Malibu", emoji: "💖", gradient: "from-pink-400 to-rose-600", border: "border-rose-800" },
-  { id: 'bheem', title: "Chota Bheem", topic: "Bheem saving the village using yummy Laddoos", emoji: "💪", gradient: "from-orange-400 to-yellow-600", border: "border-orange-800" },
-  { id: 'masha', title: "Masha & Bear", topic: "Masha teaching the Bear how to play hide and seek", emoji: "🐻", gradient: "from-amber-600 to-red-700", border: "border-amber-800" },
-];
 
 // --- Utilities ---
 const decode = (base64: string): Uint8Array => {
@@ -82,7 +72,7 @@ const aiGenerateStory = async (prompt: string): Promise<Story> => {
 const aiGenerateImage = async (prompt: string): Promise<string> => {
   const response = await getAI().models.generateContent({
     model: 'gemini-2.5-flash-image',
-    contents: { parts: [{ text: `Kid-friendly digital illustration: ${prompt}. Vibrant style.` }] },
+    contents: { parts: [{ text: `Kid-friendly digital illustration: ${prompt}. Vibrant style, Studio Ghibli inspired.` }] },
   });
   const part = response.candidates?.[0]?.content?.parts.find(p => p.inlineData);
   if (!part?.inlineData) throw new Error("No image");
@@ -98,39 +88,48 @@ const aiGenerateSpeech = async (text: string): Promise<string> => {
   return response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data || "";
 };
 
-const aiChat = async (msg: string, history: Message[]) => {
-  const chat = getAI().chats.create({
-    model: 'gemini-3-flash-preview',
-    config: { systemInstruction: "You are Sparkle the Dragon, a friendly storyteller. Use emojis! ✨🐉" },
-    history: history.map(m => ({ role: m.role, parts: [{ text: m.content }] }))
-  });
-  const res = await chat.sendMessage({ message: msg });
-  return res.text || "Oops!";
-};
-
 // --- Components ---
 
 const ChatBot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [msgs, setMsgs] = useState<Message[]>([{ role: 'model', content: "Hi! I'm Sparkle! Want to talk? ✨" }]);
   const [input, setInput] = useState('');
+  const [typing, setTyping] = useState(false);
+
   const handleSend = async () => {
-    if (!input.trim()) return;
-    const newMsgs = [...msgs, { role: 'user', content: input } as Message];
-    setMsgs(newMsgs); setInput('');
-    const reply = await aiChat(input, newMsgs);
-    setMsgs([...newMsgs, { role: 'model', content: reply }]);
+    if (!input.trim() || typing) return;
+    const userMsg = { role: 'user' as const, content: input };
+    setMsgs(prev => [...prev, userMsg]);
+    setInput('');
+    setTyping(true);
+    
+    try {
+      const chat = getAI().chats.create({
+        model: 'gemini-3-flash-preview',
+        config: { systemInstruction: "You are Sparkle the Dragon, a friendly storyteller. Use emojis! ✨🐉" },
+      });
+      const res = await chat.sendMessage({ message: input });
+      setMsgs(prev => [...prev, { role: 'model', content: res.text || "Oops!" }]);
+    } finally {
+      setTyping(false);
+    }
   };
+
   return (
     <div className="fixed bottom-6 right-6 z-50">
       {isOpen ? (
         <div className="bg-white rounded-3xl w-72 h-96 shadow-2xl flex flex-col border-4 border-yellow-300 overflow-hidden">
-          <div className="bg-yellow-400 p-3 text-white font-kids flex justify-between">
+          <div className="bg-yellow-400 p-3 text-white font-bold flex justify-between items-center">
             <span>🐉 Sparkle Chat</span>
             <button onClick={() => setIsOpen(false)}>✕</button>
           </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-2 bg-amber-50 text-sm">
-            {msgs.map((m, i) => <div key={i} className={`p-2 rounded-xl ${m.role === 'user' ? 'bg-indigo-500 text-white ml-8' : 'bg-white border mr-8'}`}>{m.content}</div>)}
+          <div className="flex-1 overflow-y-auto p-4 space-y-2 bg-amber-50">
+            {msgs.map((m, i) => (
+              <div key={i} className={`p-2 rounded-xl text-sm ${m.role === 'user' ? 'bg-indigo-500 text-white ml-8' : 'bg-white border mr-8'}`}>
+                {m.content}
+              </div>
+            ))}
+            {typing && <div className="text-xs text-indigo-300 animate-pulse">Sparkle is thinking...</div>}
           </div>
           <div className="p-2 border-t flex gap-2">
             <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSend()} className="flex-1 text-sm p-2 bg-gray-50 rounded-lg outline-none" placeholder="Say hi!" />
@@ -138,11 +137,18 @@ const ChatBot = () => {
           </div>
         </div>
       ) : (
-        <button onClick={() => setIsOpen(true)} className="bg-yellow-400 p-4 rounded-full shadow-xl text-3xl">🐉</button>
+        <button onClick={() => setIsOpen(true)} className="bg-yellow-400 p-4 rounded-full shadow-xl text-3xl hover:scale-110 transition-transform">🐉</button>
       )}
     </div>
   );
 };
+
+const CATEGORIES = [
+  { title: "Ghost Stories", topic: "A friendly ghost named Boo", emoji: "👻", color: "bg-indigo-500" },
+  { title: "Space Adventure", topic: "A cat in a rocket ship", emoji: "🚀", color: "bg-blue-500" },
+  { title: "Magic Forest", topic: "Talking trees and fairy dust", emoji: "🌳", color: "bg-green-500" },
+  { title: "Princess Quest", topic: "A brave princess and a tiara", emoji: "👑", color: "bg-pink-500" },
+];
 
 const App = () => {
   const [topic, setTopic] = useState('');
@@ -160,8 +166,12 @@ const App = () => {
     try {
       const s = await aiGenerateStory(final);
       setStory(s); setPage(0); setState(AppState.READING_STORY);
-    } catch { setState(AppState.IDLE); }
-    finally { setLoading(''); }
+    } catch (err) {
+      console.error(err);
+      setState(AppState.IDLE);
+    } finally {
+      setLoading('');
+    }
   };
 
   const readPage = async () => {
@@ -175,7 +185,9 @@ const App = () => {
       src.buffer = buf; src.connect(audioCtx.current.destination);
       src.onended = () => setPlaying(false);
       src.start();
-    } catch { setPlaying(false); }
+    } catch {
+      setPlaying(false);
+    }
   };
 
   const paintPage = async () => {
@@ -183,30 +195,33 @@ const App = () => {
     setLoading('Painting...');
     try {
       const url = await aiGenerateImage(story.pages[page].illustrationPrompt);
-      const newPages = [...story.pages]; newPages[page].imageUrl = url;
+      const newPages = [...story.pages]; 
+      newPages[page].imageUrl = url;
       setStory({ ...story, pages: newPages });
-    } finally { setLoading(''); }
+    } finally {
+      setLoading('');
+    }
   };
 
   return (
     <div className="min-h-screen p-4 md:p-8 flex flex-col items-center bg-amber-50">
       <header className="w-full max-w-4xl flex justify-between items-center mb-8">
-        <h1 className="text-3xl text-indigo-900 font-kids cursor-pointer" onClick={() => setState(AppState.IDLE)}>✨ Magic Storybook</h1>
+        <h1 className="text-3xl text-indigo-900 font-bold cursor-pointer" onClick={() => setState(AppState.IDLE)}>✨ Magic Storybook</h1>
       </header>
 
       <main className="w-full max-w-4xl bg-white rounded-[3rem] shadow-2xl p-6 md:p-12 min-h-[500px] flex flex-col items-center justify-center">
         {state === AppState.IDLE && (
-          <div className="w-full space-y-8 text-center">
-            <h2 className="text-5xl text-indigo-950 font-kids">Let's make magic!</h2>
+          <div className="w-full space-y-8 text-center animate-in fade-in zoom-in">
+            <h2 className="text-5xl text-indigo-950 font-bold">Let's make magic!</h2>
             <div className="max-w-xl mx-auto flex flex-col gap-4">
-              <input value={topic} onChange={e => setTopic(e.target.value)} placeholder="A dragon who loves pizza..." className="w-full p-5 rounded-2xl border-4 border-indigo-50 outline-none text-xl" />
-              <button onClick={() => startStory()} className="bg-indigo-500 text-white py-4 rounded-2xl font-kids text-2xl shadow-lg">Go! 🚀</button>
+              <input value={topic} onChange={e => setTopic(e.target.value)} onKeyDown={e => e.key === 'Enter' && startStory()} placeholder="A dragon who loves pizza..." className="w-full p-5 rounded-2xl border-4 border-indigo-50 outline-none text-xl shadow-inner" />
+              <button onClick={() => startStory()} className="bg-indigo-500 hover:bg-indigo-600 text-white py-4 rounded-2xl font-bold text-2xl shadow-lg transition-transform active:scale-95">Go! 🚀</button>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pt-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-8">
               {CATEGORIES.map(c => (
-                <button key={c.id} onClick={() => startStory(c.topic)} className={`p-6 rounded-3xl bg-gradient-to-br ${c.gradient} text-white font-kids border-b-4 ${c.border} hover:scale-105 transition-transform`}>
+                <button key={c.title} onClick={() => startStory(c.topic)} className={`${c.color} p-6 rounded-3xl text-white font-bold hover:scale-105 transition-transform shadow-lg`}>
                   <div className="text-4xl mb-2">{c.emoji}</div>
-                  <div>{c.title}</div>
+                  <div className="text-sm">{c.title}</div>
                 </button>
               ))}
             </div>
@@ -216,27 +231,36 @@ const App = () => {
         {state === AppState.GENERATING_STORY && (
           <div className="text-center space-y-6">
             <div className="text-8xl animate-bounce">🎨</div>
-            <h3 className="text-2xl font-kids text-indigo-900">{loading}</h3>
+            <h3 className="text-2xl font-bold text-indigo-900">{loading}</h3>
           </div>
         )}
 
         {state === AppState.READING_STORY && story && (
-          <div className="w-full space-y-6">
-            <h2 className="text-3xl text-center text-indigo-950 font-kids">{story.title}</h2>
+          <div className="w-full space-y-6 animate-in slide-in-from-right">
+            <h2 className="text-3xl text-center text-indigo-950 font-bold">{story.title}</h2>
             <div className="flex flex-col md:flex-row gap-8">
-              <div className="w-full md:w-1/2 aspect-square bg-indigo-50 rounded-[2rem] overflow-hidden flex items-center justify-center relative">
-                {story.pages[page].imageUrl ? <img src={story.pages[page].imageUrl} className="w-full h-full object-cover" /> : 
-                  <button onClick={paintPage} className="bg-indigo-500 text-white px-6 py-3 rounded-xl font-kids">{loading === 'Painting...' ? 'Painting...' : '✨ Paint Page'}</button>}
+              <div className="w-full md:w-1/2 aspect-square bg-indigo-50 rounded-[2rem] overflow-hidden flex items-center justify-center relative shadow-inner">
+                {story.pages[page].imageUrl ? (
+                  <img src={story.pages[page].imageUrl} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="text-center p-4">
+                    <button onClick={paintPage} className="bg-indigo-500 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-600 transition-colors">
+                      {loading === 'Painting...' ? 'Painting...' : '✨ Paint this Page'}
+                    </button>
+                  </div>
+                )}
               </div>
               <div className="w-full md:w-1/2 space-y-6 flex flex-col justify-between">
-                <p className="text-2xl text-gray-800 leading-relaxed font-bold">{story.pages[page].text}</p>
-                <button onClick={readPage} disabled={playing} className="w-full py-4 bg-yellow-400 text-indigo-900 rounded-2xl font-kids text-xl shadow-md">{playing ? '🗣️ Reading...' : '🔊 Read Aloud'}</button>
+                <p className="text-2xl text-gray-800 leading-relaxed font-semibold italic">"{story.pages[page].text}"</p>
+                <button onClick={readPage} disabled={playing} className="w-full py-4 bg-yellow-400 hover:bg-yellow-500 text-indigo-900 rounded-2xl font-bold text-xl shadow-md transition-all active:scale-95 disabled:opacity-50">
+                  {playing ? '🗣️ Reading...' : '🔊 Read Aloud'}
+                </button>
               </div>
             </div>
             <div className="flex justify-between items-center border-t pt-4">
-              <button disabled={page === 0} onClick={() => setPage(p => p - 1)} className="text-4xl disabled:opacity-20">⬅️</button>
-              <span className="font-kids text-indigo-300">Page {page + 1} / 4</span>
-              <button disabled={page === 3} onClick={() => setPage(p => p + 1)} className="text-4xl disabled:opacity-20">➡️</button>
+              <button disabled={page === 0} onClick={() => setPage(p => p - 1)} className="text-4xl disabled:opacity-20 hover:scale-125 transition-transform">⬅️</button>
+              <span className="font-bold text-indigo-300">Page {page + 1} / 4</span>
+              <button disabled={page === 3} onClick={() => setPage(p => p + 1)} className="text-4xl disabled:opacity-20 hover:scale-125 transition-transform">➡️</button>
             </div>
           </div>
         )}
