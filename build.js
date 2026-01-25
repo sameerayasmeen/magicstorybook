@@ -6,13 +6,13 @@ const distDir = path.join(__dirname, 'dist');
 if (fs.existsSync(distDir)) fs.rmSync(distDir, { recursive: true, force: true });
 fs.mkdirSync(distDir);
 
-// Copy necessary files
+// Only copy the core files needed for the web app
 ['index.html', 'index.tsx', 'metadata.json'].forEach(file => {
   const src = path.join(__dirname, file);
   if (fs.existsSync(src)) fs.copyFileSync(src, path.join(distDir, file));
 });
 
-// Inject API Key from Environment for Netlify
+// Inject the Netlify environment variable API_KEY into the built HTML
 const indexPath = path.join(distDir, 'index.html');
 if (fs.existsSync(indexPath)) {
   let content = fs.readFileSync(indexPath, 'utf8');
@@ -20,4 +20,4 @@ if (fs.existsSync(indexPath)) {
   fs.writeFileSync(indexPath, content);
 }
 
-console.log('Build complete.');
+console.log('Build complete. Folder "dist" is ready.');

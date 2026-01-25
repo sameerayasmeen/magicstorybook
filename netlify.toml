@@ -7,13 +7,3 @@
   from = "/*"
   status = 200
   to = "/index.html"
-
-[[headers]]
-  for = "*.tsx"
-  [headers.values]
-    Content-Type = "application/javascript; charset=utf-8"
-
-[[headers]]
-  for = "*.ts"
-  [headers.values]
-    Content-Type = "application/javascript; charset=utf-8"
