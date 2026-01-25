@@ -1,14 +1,13 @@
 
 [build]
-  publish = "."
+  publish = "dist"
+  command = "npm run build"
 
 [[redirects]]
   from = "/*"
   status = 200
   to = "/index.html"
 
-# Critical for "no-build" deployments:
-# Tells the browser to treat TS/TSX files as JavaScript modules.
 [[headers]]
   for = "*.tsx"
   [headers.values]
